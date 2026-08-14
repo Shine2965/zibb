@@ -629,7 +629,11 @@ setInterval(() => {
     document.body.innerHTML = "<h1 style='color:gold;text-align:center;margin-top:40vh;'>🚫 Developer Tools Terdeteksi</h1>";
   }
 }, 2000);
+ const maintenance = true;
 
+  if (maintenance === true) {
+    window.location.replace("404/");
+  }
 console.log('💳 QRIS Payment - Sosmed 2 siap!');
 console.log('🎫 Voucher otomatis mengurangi total bayar');
 </script>
