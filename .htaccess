@@ -1,0 +1,11 @@
+RewriteEngine On
+
+# Ganti 123.45.67.89 dengan IP internet Anda sendiri agar Anda TIDAK ikut terblokir
+RewriteCond %{REMOTE_ADDR} !^114\.8\.219\.218$
+
+# Cegah looping jika file maintenance adalah 503.php
+RewriteCond %{REQUEST_URI} !/503\.php$
+
+# Alihkan semua halaman lain ke status 503
+RewriteRule ^(.*)$ /503.php [L,R=503]
+  
