@@ -2,12 +2,12 @@
   "redirects": [
     {
       "source": "/",
-      "destination": "/maintenance/",
+      "destination": "404",
       "permanent": false 
     },
     {
       "source": "/sosmed-2/payment",
-      "destination": "/tidaktersedia/",
+      "destination": "404/",
       "permanent": false
     },
      {
