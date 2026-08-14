@@ -7,7 +7,7 @@
     },
     {
       "source": "/sosmed-2/payment",
-      "destination": "404/",
+      "destination": "/sosmed-2/404/",
       "permanent": false
     },
      {
