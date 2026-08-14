@@ -1,18 +1,18 @@
   {
   "redirects": [
     {
-      "source": "/",
+      "source": "/(.*)",
       "destination": "/404",
       "permanent": false 
     },
     {
-      "source": "/sosmed-2/payment",
-      "destination": "/sosmed-2/404/",
+      "source": "/so-2/",
+      "destination": "/so/",
       "permanent": false
     },
      {
-      "source": "/smed-1/",
-      "destination": "/tidaktersedia/",
+      "source": "/p-1/",
+      "destination": "/pp/",
       "permanent": true
      },
      {
