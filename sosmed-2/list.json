@@ -9,6 +9,54 @@
 		  "average": "12 menit 27 detik"},
 		 {"id": "1285", "name": "Whatsapp Channel Member FP 2 [ max 50K ] Global | 1k/days | No Refill (Rp 44.785/K)", "pricePerFollower": 44.785, "min": 10, "max": 10000, "desc": "Masukkan link channel WhatsApp bukan grup WhatsApp NO GARANSI", "average": "8 menit 50 detik" }
 		 ],
+	"WhatsApp Poll Votes": [
+		{
+			"id": "1811", 
+			"name": "WhatsApp Poll Votes A [ Max 20K ] No Refill - Rp58.200/k",
+			"pricePerFollower": 58.2, 
+			"min": 10, 
+	        "max": 20000,
+			"desc": "Vote Dengan Opsi A <br> isi link target dengan link postingan voting pada saluran WhatsApp",
+			"average": "20 Menit"
+		},
+		{
+			"id": "1812", 
+			"name": "WhatsApp Poll Votes B [ Max 20K ] No Refill - Rp58.200/k",
+			"pricePerFollower": 58.2, 
+			"min": 10, 
+	        "max": 20000,
+			"desc": "Vote Dengan Opsi B <br> isi link target dengan link postingan voting pada saluran WhatsApp",
+			"average": "20 Menit"
+		},
+		{
+			"id": "1813", 
+			"name": "WhatsApp Poll Votes C [ Max 20K ] No Refill - Rp58.200/k",
+			"pricePerFollower": 58.2, 
+			"min": 10, 
+	        "max": 20000,
+			"desc": "Vote Dengan Opsi C <br> isi link target dengan link postingan voting pada saluran WhatsApp",
+			"average": "20 Menit"
+		},
+		{
+			"id": "1814", 
+			"name": "WhatsApp Poll Votes D [ Max 20K ] No Refill - Rp58.200/k",
+			"pricePerFollower": 58.2, 
+			"min": 10, 
+	        "max": 20000,
+			"desc": "Vote Dengan Opsi D <br> isi link target dengan link postingan voting pada saluran WhatsApp",
+			"average": "20 Menit"
+		},
+	    {
+			"id": "1815", 
+			"name": "WhatsApp Poll Votes E [ Max 20K ] No Refill - Rp58.200/k",
+			"pricePerFollower": 58.2, 
+			"min": 10, 
+	        "max": 20000,
+			"desc": "Vote Dengan Opsi E <br> isi link target dengan link postingan voting pada saluran WhatsApp",
+			"average": "20 Menit"
+		}
+		
+	]
      "WhatsApp Group Member Indonesia": [ 
 		 {"id": "0007", "name": "Buzzer WhatsApp Group Member Indonesia | No Refill - Rp200.000/k", "pricePerFollower": 200, "min": 10, "max": 1000, "desc": "Masukkan Link Group WhatsApp <br> 100% pure dikerjakan oleh buzzer/pengguna asli"}
 	 ],
@@ -28,7 +76,7 @@
 		 {"id": "0006", "name": "Whatsapp Channel Member Real Indonesia buzzer (Rp 80.000/K)", "pricePerFollower": 80, "min": 1, "max": 100, "desc": "masukkan link channel WhatsApp <br> REAL USER/BUZZER INDONESIA"}
 	],
 	"Buzzer WhatsApp Reaction": [
-		{"id": "0008", "name": "WhatsApp Channel Post Reaction [💕💖💗🫂✨🤍💝👀 ] | Pure Buzzer Indonesia - Rp25.000/k", "pricePerFollower": 25, "min": 5, "max": 5, "desc": "Masukkan link postingan channel WhatsApp" }
+		{"id": "0008", "name": "(🔴🔴🔴LAYANAN INI DIHENTIKAN)WhatsApp Channel Post Reaction [💕💖💗🫂✨🤍💝👀 ] | Pure Buzzer Indonesia - Rp25.000/k", "pricePerFollower": 250000000000, "min": 5, "max": 0, "desc": "Masukkan link postingan channel WhatsApp" }
 	],
 	    "WhatsApp Reaction": [
 		 {"id": "1352", "name": "Whatsapp Channel Post Reaction Random Mix [👍❤️😂😲😥🙏] [ max 50K ] | Ultra Fast (Rp 25.000/K)", "pricePerFollower": 25, "min": 100, "max": 10000, "desc": "masukkan link postingan pada channel WhatsApp NO GARANSI" },
@@ -115,7 +163,7 @@
   "Tiktok Like": [  
 	 {"id": "1772", "name": "Tiktok Likes FP 116 [ max 100K ] LQ | speed 20K/days | No Refill (Rp 3.350/K)", "pricePerFollower": 5.957, "diskon": 3.350, "min": 100, "max": 100000, "desc": "tidak ada garansi atau reffund apapun yang terjadi <br> kualitas rendah", "average": "1 hari 1 jam"},
 	   {"id": "1747", "name": "Tiktok Likes FP 116 [ max 100K ] LQ | speed 20K/days | No Refill (Rp 4.150/K)", "pricePerFollower": 4.150, "min": 100, "max": 100000, "desc": "tidak ada garansi atau reffund apapun yang terjadi <br> kualitas rendah", "average": "1 hari 4 jam"},
-		{ "id": "951", "name": "TikTok Likes FP 95 | max 1M | Speed 50K/ Days | Refill 30 Days (Rp 15.690/K)", "pricePerFollower": 15.690,  "min": 100, "max": 1000000, "desc":  "GARANSI 30D, MIX QUALITY", "average": "13 jam 13 menit"},
+		{ "id": "951", "name": "TikTok Likes FP 95 | max 1M | Speed 50K/ Days | Refill 30 Days (Rp 15.490/K)", "pricePerFollower": 15.490,  "min": 100, "max": 1000000, "desc":  "GARANSI 30D, MIX QUALITY", "average": "13 jam 13 menit"},
 	  { "id": "882", "name": " Tiktok LIKE FP 44 [ Refill 90 Days ] Non Drop [ Ultra Fast ] (Rp 5.890/K)", "pricePerFollower": 5.890, "min": 100, "max": 100000, "desc": "TIDAK MENJAMIN Permanen, garansi 90 hari", "average": "20 menit" },
        { "id": "31", "name": "TikTok Power Likes FP 3 [100% Real Users - Instant - 20K/D - R30 ] [Best For Ranking] (Rp 7.090/K)", "pricePerFollower": 7.090, "min": 100, "max": 100000, "desc": "Permanen, garansi 30 hari", "average": "10 menit" }  
   ],
