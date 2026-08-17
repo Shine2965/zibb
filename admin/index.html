@@ -140,6 +140,14 @@
         .btn-purple:hover {
             background: #a78bfa66;
         }
+        .btn-home {
+            background: #00ffaa22;
+            color: #00ffaa;
+            border: 1px solid #00ffaa44;
+        }
+        .btn-home:hover {
+            background: #00ffaa44;
+        }
         .header-actions {
             display: flex;
             gap: 10px;
@@ -172,26 +180,6 @@
             font-size: 11px;
             color: #555;
             margin-top: 8px;
-        }
-        .role-badge {
-            display: inline-block;
-            padding: 2px 12px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-        .role-badge.admin {
-            background: #ff444422;
-            color: #ff6666;
-        }
-        .role-badge.vip {
-            background: #ffaa0044;
-            color: #ffaa00;
-        }
-        .role-badge.user {
-            background: #444;
-            color: #888;
         }
 
         /* TABLE */
@@ -369,13 +357,9 @@
                     <div class="sub">Edit harga layanan secara massal (fixed atau persentase)</div>
                 </div>
                 <div class="header-actions">
-                    <button class="btn btn-back" onclick="location.href='/info/dashboard/index.html'">⬅️ Kembali</button>
+                    <button class="btn btn-home" onclick="location.href='/'">🏠 Home</button>
                     <button class="btn btn-primary" onclick="downloadJSON()">📥 Download JSON</button>
                 </div>
-            </div>
-            <div id="userInfo" style="color:#888;font-size:13px;margin-top:8px;">
-                👤 <span id="userEmailDisplay">-</span>
-                <span id="userRoleDisplay" style="margin-left:10px;"></span>
             </div>
             <div class="env-status" id="envStatus">🔌 Memuat data layanan...</div>
         </div>
@@ -473,16 +457,18 @@
         <div class="text-muted" style="text-align:center;margin-top:20px;">
             © Shine Shop · Harga Editor
         </div>
-        <div class="security-badge">🔒 Hanya Admin & VIP yang dapat mengakses</div>
+        <div class="security-badge">🔓 Akses Publik · Tanpa Login</div>
     </div>
 
     <script>
         // ============================================================
-        // 🔒 KONFIGURASI
+        // 🔓 TANPA LOGIN - AKSES PUBLIK
         // ============================================================
-        const LOGIN_URL = '/info/index.html';
+
+        // ============================================================
+        // KONFIGURASI
+        // ============================================================
         const DATA_URL = '/sosmed-2/list.json';
-        const SESSION_TIMEOUT = 36000000;
 
         let originalData = {};
         let currentData = {};
@@ -491,84 +477,7 @@
         let searchQuery = '';
 
         // ============================================================
-        // 🔒 CEK SESSION
-        // ============================================================
-        function checkSession() {
-            const loggedIn = localStorage.getItem('logged_in');
-            const sessionToken = localStorage.getItem('session_token');
-            const sessionCreated = parseInt(localStorage.getItem('session_created') || '0');
-            const now = Date.now();
-
-            if (loggedIn !== 'true' || !sessionToken) {
-                window.location.href = LOGIN_URL;
-                return false;
-            }
-
-            if (now - sessionCreated > SESSION_TIMEOUT) {
-                console.log('⏰ Session expired');
-                window.location.href = LOGIN_URL;
-                return false;
-            }
-
-            return true;
-        }
-
-        if (!checkSession()) {
-            throw new Error('Redirect ke login');
-        }
-
-        // ============================================================
-        // 🔒 GET USER DATA
-        // ============================================================
-        function getUserData() {
-            return {
-                email: localStorage.getItem('user_email') || '',
-                role: localStorage.getItem('user_role') || 'user'
-            };
-        }
-
-        // ============================================================
-        // 🔒 CEK AKSES
-        // ============================================================
-        async function checkAccess() {
-            const statusEl = document.getElementById('envStatus');
-            const user = getUserData();
-
-            document.getElementById('userEmailDisplay').textContent = user.email;
-
-            let roleHtml = '';
-            if (user.role === 'admin') {
-                roleHtml = `<span class="role-badge admin">🔑 Admin</span>`;
-            } else if (user.role === 'vip') {
-                roleHtml = `<span class="role-badge vip">⭐ VIP</span>`;
-            } else {
-                roleHtml = `<span class="role-badge user">👤 User</span>`;
-            }
-            document.getElementById('userRoleDisplay').innerHTML = roleHtml;
-
-            const allowedRoles = ['admin', 'vip'];
-            if (!allowedRoles.includes(user.role)) {
-                statusEl.textContent = '❌ Akses ditolak! Hanya Admin & VIP yang bisa mengakses halaman ini.';
-                statusEl.style.color = '#ff6666';
-                document.getElementById('toolsCard').style.display = 'none';
-                document.getElementById('summaryCard').style.display = 'none';
-                document.getElementById('tableCard').style.display = 'none';
-                Swal.fire({
-                    title: '⛔ Akses Ditolak',
-                    text: 'Hanya Admin & VIP yang dapat mengakses halaman ini.',
-                    icon: 'error',
-                    confirmButtonColor: '#00ffaa'
-                });
-                return false;
-            }
-
-            statusEl.textContent = `✅ Akses ${user.role.toUpperCase()} terverifikasi`;
-            statusEl.style.color = '#00ffaa';
-            return true;
-        }
-
-        // ============================================================
-        // 🔒 LOAD DATA
+        // LOAD DATA
         // ============================================================
         async function loadData() {
             const statusEl = document.getElementById('envStatus');
@@ -617,7 +526,7 @@
         }
 
         // ============================================================
-        // 🔒 RENDER TABLE
+        // RENDER TABLE
         // ============================================================
         function renderTable() {
             const container = document.getElementById('tableWrap');
@@ -723,7 +632,7 @@
         }
 
         // ============================================================
-        // 🔒 FIND ORIGINAL SERVICE
+        // FIND ORIGINAL SERVICE
         // ============================================================
         function findOriginalService(category, id) {
             if (!originalData[category]) return null;
@@ -731,7 +640,7 @@
         }
 
         // ============================================================
-        // 🔒 UPDATE SUMMARY
+        // UPDATE SUMMARY
         // ============================================================
         function updateSummary() {
             let totalServices = 0;
@@ -754,7 +663,7 @@
         }
 
         // ============================================================
-        // 🔒 UPDATE ITEM COUNT
+        // UPDATE ITEM COUNT
         // ============================================================
         function updateItemCount() {
             let total = 0;
@@ -765,7 +674,7 @@
         }
 
         // ============================================================
-        // 🔒 APPLY EDIT
+        // APPLY EDIT
         // ============================================================
         function applyEdit() {
             const mode = document.getElementById('editMode').value;
@@ -791,7 +700,6 @@
             categoriesToProcess.forEach(cat => {
                 if (!currentData[cat]) return;
                 currentData[cat].forEach(service => {
-                    // Filter ID
                     if (idFilter && !String(service.id).includes(idFilter)) return;
 
                     const oldPrice = service.pricePerFollower;
@@ -803,9 +711,7 @@
                         newPrice = oldPrice + (oldPrice * (value / 100));
                     }
 
-                    // Minimal harga 0
                     newPrice = Math.max(0, newPrice);
-                    // Pembulatan ke 3 desimal
                     newPrice = Math.round(newPrice * 1000) / 1000;
 
                     if (newPrice !== oldPrice) {
@@ -827,7 +733,6 @@
                 return;
             }
 
-            // Show result
             const resultEl = document.getElementById('editResult');
             resultEl.style.display = 'block';
             resultEl.innerHTML = `
@@ -856,7 +761,7 @@
         }
 
         // ============================================================
-        // 🔒 RESET DATA
+        // RESET DATA
         // ============================================================
         function resetData() {
             Swal.fire({
@@ -889,7 +794,7 @@
         }
 
         // ============================================================
-        // 🔒 FILTER
+        // FILTER
         // ============================================================
         function setFilter(filter) {
             currentFilter = filter;
@@ -911,7 +816,7 @@
         }
 
         // ============================================================
-        // 🔒 DOWNLOAD JSON
+        // DOWNLOAD JSON
         // ============================================================
         function downloadJSON() {
             const dataToExport = JSON.parse(JSON.stringify(currentData));
@@ -934,7 +839,7 @@
         }
 
         // ============================================================
-        // 🔒 ANTI INSPECT
+        // ANTI INSPECT
         // ============================================================
         document.addEventListener('keydown', function(e) {
             if (e.key === 'F12' ||
@@ -946,17 +851,12 @@
         });
 
         // ============================================================
-        // 🔒 INIT
+        // INIT
         // ============================================================
-        document.addEventListener('DOMContentLoaded', async function() {
-            const hasAccess = await checkAccess();
-            if (!hasAccess) return;
-
-            await loadData();
-
-            console.log('💰 Harga Editor siap!');
-            console.log('👤 User:', getUserData().email);
-            console.log('🔑 Role:', getUserData().role);
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            console.log('💰 Harga Editor (Publik) siap!');
+            console.log('🔓 Akses publik - tidak perlu login');
         });
     </script>
 </body>
