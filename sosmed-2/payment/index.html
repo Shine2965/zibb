@@ -383,6 +383,12 @@ p{
   color:#ef4444;
   border:1px solid rgba(239,68,68,0.3);
 }
+.payment-status.already-sent{
+  display:block;
+  background:rgba(100,100,255,0.15);
+  color:#8888ff;
+  border:1px solid rgba(100,100,255,0.3);
+}
 
 @media(max-width:480px){
   .card{padding:20px 16px;border-radius:20px}
@@ -472,6 +478,32 @@ let API_KEY = '';
 const ADMIN_FEE_PERCENT = 2;
 const ADMIN_FEE_THRESHOLD = 500000;
 
+// ===== NOTIFIKASI DISCORD - CEK SUDAH TERKIRIM =====
+function getDiscordSentKey() {
+  return `discord_sent_${trx}`;
+}
+
+function isDiscordAlreadySent() {
+  try {
+    const key = getDiscordSentKey();
+    return localStorage.getItem(key) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function markDiscordSent() {
+  try {
+    const key = getDiscordSentKey();
+    localStorage.setItem(key, 'true');
+    console.log('📨 Discord notification marked as sent');
+    return true;
+  } catch (e) {
+    console.warn('Gagal mark Discord sent:', e);
+    return false;
+  }
+}
+
 // ================= AMBIL API KEY DARI ENV =================
 async function fetchApiKey() {
   try {
@@ -520,6 +552,7 @@ let transactionLocked = false;
 let isPaymentVerified = false;
 let verificationInterval = null;
 let adminFee = 0;
+let isSendingDiscord = false;
 
 // ================= KODE UNIK PERSISTEN =================
 function getUniqueCodeKey() {
@@ -556,13 +589,10 @@ function saveUniqueCode(code) {
 }
 
 function generateUniqueCode() {
-  // Cek apakah sudah ada kode unik untuk transaksi ini
   const existingCode = getStoredUniqueCode();
   if (existingCode !== null) {
     return existingCode;
   }
-  
-  // Jika belum ada, buat baru (0-100)
   const newCode = Math.floor(Math.random() * 101);
   saveUniqueCode(newCode);
   return newCode;
@@ -714,11 +744,78 @@ async function checkAndHandleBan() {
   return false;
 }
 
+// ================= SEND TO DISCORD (1× SAJA) =================
+async function sendToDiscord(gmail, userID) {
+  // CEK APAKAH SUDAH PERNAH TERKIRIM
+  if (isDiscordAlreadySent()) {
+    console.log('⏭️ Discord notification already sent, skipping...');
+    return true;
+  }
+  
+  // CEK APAKAH SEDANG PROSES
+  if (isSendingDiscord) {
+    console.log('⏳ Discord notification is being sent, waiting...');
+    return false;
+  }
+  
+  isSendingDiscord = true;
+  
+  try {
+    const totalDenganUnik = finalTotal + uniqueCode + adminFee;
+    const refCode = localStorage.getItem('referral_code') || "-";
+    
+    let adminFeeText = '';
+    if (adminFee > 0) {
+      adminFeeText = `\n📊 **Biaya Admin (2%):** Rp ${adminFee.toLocaleString('id-ID')}`;
+    }
+    
+    const message = `💰 **PEMBAYARAN BERHASIL DIVERIFIKASI**
+━━━━━━━━━━━━━━━━━━━━━
+🆔 **ID Transaksi:** ${trx}
+📋 **Layanan:** ${layanan}
+🎯 **Target:** ${target}
+💰 **Harga Asli:** Rp ${originalTotal.toLocaleString('id-ID')}
+💵 **Total Bayar:** Rp ${totalDenganUnik.toLocaleString('id-ID')}
+🔑 **Kode Unik:** ${uniqueCode}${adminFeeText}
+🎫 **Voucher:** ${appliedVoucher || "-"}
+📉 **Diskon:** ${appliedVoucher ? `Rp ${appliedDiscount.toLocaleString('id-ID')}` : "-"}
+📧 **Gmail:** ${gmail}
+🆔 **User ID:** ${userID}
+🔗 **Referral:** ${refCode}
+📅 **Waktu:** ${formatWIB(new Date())}
+━━━━━━━━━━━━━━━━━━━━━
+✅ **Status: LUNAS**`;
+
+    const response = await fetch(discordWebhook, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: message })
+    });
+    
+    if (response.ok) {
+      // MARK SEBAGAI SUDAH TERKIRIM
+      markDiscordSent();
+      console.log('✅ Notifikasi Discord terkirim (1×)');
+      isSendingDiscord = false;
+      return true;
+    } else {
+      console.error('❌ Gagal kirim ke Discord:', response.status);
+      isSendingDiscord = false;
+      return false;
+    }
+  } catch (err) {
+    console.error('❌ Error kirim ke Discord:', err);
+    isSendingDiscord = false;
+    return false;
+  }
+}
+
 // ================= CHECK PAYMENT VIA QIOSPAY =================
 async function checkPaymentStatus() {
   const statusEl = document.getElementById('paymentStatus');
   const confirmBtn = document.getElementById('confirmBtn');
   
+  // CEK APAKAH SUDAH DIVERIFIKASI
   if (isPaymentVerified) {
     statusEl.className = 'payment-status success';
     statusEl.textContent = '✅ Pembayaran sudah terverifikasi!';
@@ -726,13 +823,27 @@ async function checkPaymentStatus() {
     return;
   }
   
+  // CEK APAKAH TRANSAKSI SUDAH LOCK
   if (checkTransactionLockLocal()) {
+    isPaymentVerified = true;
     statusEl.className = 'payment-status success';
     statusEl.textContent = '✅ Transaksi sudah dikonfirmasi sebelumnya!';
     statusEl.style.display = 'block';
     return;
   }
   
+  // CEK APAKAH DISCORD SUDAH TERKIRIM (TAPI BELUM LOCK)
+  if (isDiscordAlreadySent()) {
+    isPaymentVerified = true;
+    statusEl.className = 'payment-status success';
+    statusEl.textContent = '✅ Pembayaran sudah terverifikasi!';
+    statusEl.style.display = 'block';
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = '✅ Pembayaran Terverifikasi';
+    return;
+  }
+  
+  // CEK API KEY
   if (!API_KEY) {
     await fetchApiKey();
     if (!API_KEY) {
@@ -763,7 +874,7 @@ async function checkPaymentStatus() {
     }
     
     const url = QIOSPAY_MUTASI_URL();
-    console.log('📡 Fetching:', url);
+    console.log('📡 Fetching mutasi...');
     
     const res = await fetch(url + '?t=' + Date.now());
     
@@ -789,12 +900,19 @@ async function checkPaymentStatus() {
     }
     
     if (foundTransaction) {
+      // ✅ PEMBAYARAN TERDETEKSI
       isPaymentVerified = true;
       statusEl.className = 'payment-status success';
       statusEl.textContent = `✅ Pembayaran Rp ${totalBayar.toLocaleString('id-ID')} terverifikasi!`;
       
-      await sendToDiscord(gmail, userID);
-      saveTransactionLockLocal();
+      // KIRIM KE DISCORD (1× SAJA)
+      const sent = await sendToDiscord(gmail, userID);
+      
+      if (sent) {
+        // LOCK TRANSAKSI
+        saveTransactionLockLocal();
+        console.log('🔒 Transaksi locked');
+      }
       
       confirmBtn.disabled = true;
       confirmBtn.textContent = '✅ Pembayaran Terverifikasi';
@@ -824,45 +942,6 @@ async function checkPaymentStatus() {
     statusEl.textContent = '❌ Gagal mengecek pembayaran: ' + err.message;
     confirmBtn.disabled = false;
     confirmBtn.textContent = '✅ Cek Status Pembayaran';
-  }
-}
-
-// ================= SEND TO DISCORD =================
-async function sendToDiscord(gmail, userID) {
-  const totalDenganUnik = finalTotal + uniqueCode + adminFee;
-  const refCode = localStorage.getItem('referral_code') || "-";
-  
-  let adminFeeText = '';
-  if (adminFee > 0) {
-    adminFeeText = `\n📊 **Biaya Admin (2%):** Rp ${adminFee.toLocaleString('id-ID')}`;
-  }
-  
-  const message = `💰 **PEMBAYARAN BERHASIL DIVERIFIKASI**
-━━━━━━━━━━━━━━━━━━━━━
-🆔 **ID Transaksi:** ${trx}
-📋 **Layanan:** ${layanan}
-🎯 **Target:** ${target}
-💰 **Harga Asli:** Rp ${originalTotal.toLocaleString('id-ID')}
-💵 **Total Bayar:** Rp ${totalDenganUnik.toLocaleString('id-ID')}
-🔑 **Kode Unik:** ${uniqueCode}${adminFeeText}
-🎫 **Voucher:** ${appliedVoucher || "-"}
-📉 **Diskon:** ${appliedVoucher ? `Rp ${appliedDiscount.toLocaleString('id-ID')}` : "-"}
-📧 **Gmail:** ${gmail}
-🆔 **User ID:** ${userID}
-🔗 **Referral:** ${refCode}
-📅 **Waktu:** ${formatWIB(new Date())}
-━━━━━━━━━━━━━━━━━━━━━
-✅ **Status: LUNAS**`;
-
-  try {
-    await fetch(discordWebhook, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: message })
-    });
-    console.log('✅ Notifikasi Discord terkirim');
-  } catch (err) {
-    console.error('❌ Gagal kirim ke Discord:', err);
   }
 }
 
@@ -925,11 +1004,9 @@ function buildQR(a){
 
 // ================= UPDATE DISPLAY =================
 function updateDisplay(){
-  // ===== KODE UNIK PERSISTEN =====
   uniqueCode = generateUniqueCode();
   document.getElementById('uniqueCode').textContent = uniqueCode;
   
-  // Hitung biaya admin
   adminFee = calculateAdminFee(originalTotal);
   
   const totalDenganUnik = finalTotal + uniqueCode + adminFee;
@@ -1067,6 +1144,7 @@ document.getElementById('confirmBtn').onclick = function() {
   // 3. CEK LOCK
   if (checkTransactionLockLocal()) {
     transactionLocked = true;
+    isPaymentVerified = true;
     const btn = document.getElementById('confirmBtn');
     btn.disabled = true;
     btn.textContent = '✅ Transaksi Sudah Dikonfirmasi';
@@ -1076,7 +1154,19 @@ document.getElementById('confirmBtn').onclick = function() {
     return;
   }
   
-  // 4. CEK VOUCHER
+  // 4. CEK APAKAH DISCORD SUDAH TERKIRIM (TAPI BELUM LOCK)
+  if (isDiscordAlreadySent()) {
+    isPaymentVerified = true;
+    const btn = document.getElementById('confirmBtn');
+    btn.disabled = true;
+    btn.textContent = '✅ Pembayaran Terverifikasi';
+    document.getElementById('paymentStatus').className = 'payment-status success';
+    document.getElementById('paymentStatus').textContent = '✅ Pembayaran sudah terverifikasi!';
+    document.getElementById('paymentStatus').style.display = 'block';
+    return;
+  }
+  
+  // 5. CEK VOUCHER
   const usedVouchers = getUsedVouchers();
   if (usedVouchers.length > 0) {
     const lastUsed = usedVouchers[usedVouchers.length - 1];
@@ -1087,10 +1177,10 @@ document.getElementById('confirmBtn').onclick = function() {
     document.getElementById('applyVoucher').style.opacity = '0.4';
   }
   
-  // 5. UPDATE DISPLAY (kode unik akan di-generate/diambil dari localStorage)
+  // 6. UPDATE DISPLAY
   updateDisplay();
   
-  // 6. AUTO CHECK PAYMENT SETIAP 5 DETIK
+  // 7. AUTO CHECK PAYMENT SETIAP 5 DETIK
   setTimeout(() => {
     checkPaymentStatus();
     verificationInterval = setInterval(checkPaymentStatus, 5000);
@@ -1134,9 +1224,9 @@ console.log('🚫 Cek banned berdasarkan Gmail');
 console.log('🕐 WIB real-time aktif');
 console.log('✅ Auto-verifikasi QRIS aktif (cek setiap 5 detik)');
 console.log('🔑 Kode unik PERSISTEN (disimpan di localStorage)');
+console.log('📨 Notifikasi Discord hanya 1× (cek localStorage)');
 console.log('🏷️ Merchant Code:', MERCHANT_CODE);
 console.log('📊 Admin Fee 2% untuk transaksi > Rp 500.000');
-console.log('🔑 API Key dari Environment Variable');
 </script>
 </body>
 </html>
