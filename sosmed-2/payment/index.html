@@ -468,11 +468,9 @@ const WHATSAPP_NUMBER = "6289518103883";
 const MERCHANT_CODE = "QP052692";
 
 // ===== API KEY DARI ENVIRONMENT VARIABLE =====
-// Untuk Vercel: process.env.QIOSPAY_API_KEY
-// Untuk testing lokal: gunakan default
 let API_KEY = '';
-const ADMIN_FEE_PERCENT = 2; // 2% untuk transaksi di atas 500K
-const ADMIN_FEE_THRESHOLD = 500000; // 500.000
+const ADMIN_FEE_PERCENT = 2;
+const ADMIN_FEE_THRESHOLD = 500000;
 
 // ================= AMBIL API KEY DARI ENV =================
 async function fetchApiKey() {
@@ -489,7 +487,6 @@ async function fetchApiKey() {
   } catch (e) {
     console.warn('⚠️ Gagal mengambil API Key dari ENV, menggunakan default');
   }
-  // Fallback default
   API_KEY = 'd1370635be9857299bde44b946c938655534efdff7ef5246685b67ef91decb1c';
   console.log('📌 Menggunakan API Key default');
 }
@@ -523,6 +520,53 @@ let transactionLocked = false;
 let isPaymentVerified = false;
 let verificationInterval = null;
 let adminFee = 0;
+
+// ================= KODE UNIK PERSISTEN =================
+function getUniqueCodeKey() {
+  return `unique_code_${trx}`;
+}
+
+function getStoredUniqueCode() {
+  try {
+    const key = getUniqueCodeKey();
+    const stored = localStorage.getItem(key);
+    if (stored !== null) {
+      const parsed = parseInt(stored);
+      if (!isNaN(parsed) && parsed >= 0 && parsed <= 100) {
+        console.log('🔑 Kode unik dari localStorage:', parsed);
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.warn('Gagal baca kode unik dari localStorage:', e);
+  }
+  return null;
+}
+
+function saveUniqueCode(code) {
+  try {
+    const key = getUniqueCodeKey();
+    localStorage.setItem(key, String(code));
+    console.log('💾 Kode unik disimpan ke localStorage:', code);
+    return true;
+  } catch (e) {
+    console.warn('Gagal simpan kode unik:', e);
+    return false;
+  }
+}
+
+function generateUniqueCode() {
+  // Cek apakah sudah ada kode unik untuk transaksi ini
+  const existingCode = getStoredUniqueCode();
+  if (existingCode !== null) {
+    return existingCode;
+  }
+  
+  // Jika belum ada, buat baru (0-100)
+  const newCode = Math.floor(Math.random() * 101);
+  saveUniqueCode(newCode);
+  return newCode;
+}
 
 // ================= HITUNG BIAYA ADMIN =================
 function calculateAdminFee(amount) {
@@ -689,7 +733,6 @@ async function checkPaymentStatus() {
     return;
   }
   
-  // Cek API Key
   if (!API_KEY) {
     await fetchApiKey();
     if (!API_KEY) {
@@ -862,11 +905,6 @@ function isVoucherUsed(code) {
 }
 
 // ================= QRIS =================
-function generateUniqueCode() {
-  // Kode unik 0-100
-  return Math.floor(Math.random() * 101);
-}
-
 function crc16(s){
   let c=0xFFFF;
   for(let i=0;i<s.length;i++){
@@ -887,6 +925,7 @@ function buildQR(a){
 
 // ================= UPDATE DISPLAY =================
 function updateDisplay(){
+  // ===== KODE UNIK PERSISTEN =====
   uniqueCode = generateUniqueCode();
   document.getElementById('uniqueCode').textContent = uniqueCode;
   
@@ -1048,7 +1087,7 @@ document.getElementById('confirmBtn').onclick = function() {
     document.getElementById('applyVoucher').style.opacity = '0.4';
   }
   
-  // 5. UPDATE DISPLAY
+  // 5. UPDATE DISPLAY (kode unik akan di-generate/diambil dari localStorage)
   updateDisplay();
   
   // 6. AUTO CHECK PAYMENT SETIAP 5 DETIK
@@ -1094,6 +1133,7 @@ console.log('📧 Gmail diambil dari localStorage');
 console.log('🚫 Cek banned berdasarkan Gmail');
 console.log('🕐 WIB real-time aktif');
 console.log('✅ Auto-verifikasi QRIS aktif (cek setiap 5 detik)');
+console.log('🔑 Kode unik PERSISTEN (disimpan di localStorage)');
 console.log('🏷️ Merchant Code:', MERCHANT_CODE);
 console.log('📊 Admin Fee 2% untuk transaksi > Rp 500.000');
 console.log('🔑 API Key dari Environment Variable');
