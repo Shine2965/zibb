@@ -1,25 +1,9 @@
-  {
-  "redirects": [
-    {
-      "source": "/sosm/",
-      "destination": "/",
-      "permanent": false 
-    },
-    {
-      "source": "/so-2/",
-      "destination": "/so/",
-      "permanent": false
-    },
-     {
-      "source": "/p-1/",
-      "destination": "/pp/",
-      "permanent": true
-     },
-     {
-      "source": "/io/",
-      "destination": "/404",
-      "permanent": true
+{
+    "rewrites": [
+        { "source": "/api/(.*)", "destination": "/api/$1" }
+    ],
+    "env": {
+        "QIOSPAY_API_KEY": "d1370635be9857299bde44b946c938655534efdff7ef5246685b67ef91decb1c",
+        "QIOSPAY_MERCHANT_CODE": "QP052692"
     }
-  ]
-  
-  }
+}
